@@ -1,17 +1,119 @@
+# ==========================
+# Main project configuration 
+# ==========================
+
 [project]
 name = "authmint"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+version = "0.17.3"
+description = "A modern Python library for issuing and verifying limited-time, scoped, and replay-protected tokens."
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
 authors = [
-    { name = "shaileshpandit141", email = "shaileshpandit141@gmail.com" }
+    { name = "shaileshpandit141", email = "shaileshpandit141@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Framework :: Django",
+    "Framework :: Django :: 4.0",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = [
+    "authentication",
+    "authorization",
+    "jwt",
+    "tokens",
+    "token-auth",
+    "time-limited-tokens",
+    "ephemeral-tokens",
+    "scoped-tokens",
+    "secure-tokens",
+    "key-rotation",
+    "replay-protection",
+    "cryptography",
+    "EdDSA",
+    "Ed25519",
+    "Redis",
+    "session",
+    "magic-link",
+    "password-reset",
+    "email-verification",
+    "api-security",
+    "auth",
 ]
 requires-python = ">=3.13"
 dependencies = []
 
+# CLI scripts entry point configuration
+# -------------------------------------
 [project.scripts]
-authmint = "authmint:main"
+authmint = "authmint:entry_point"
 
+# ==========================
+# Build system configuration
+# ==========================
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+# =================
+# Dependency groups
+# =================
+[dependency-groups]
+dev = []
+
+# =====================
+# Optional dependencies
+# =====================
+[project.optional-dependencies]
+dev = ["mypy", "ruff"]
+
+# ===============
+# UV tool sources
+# ===============
+[tool.uv.sources]
+authmint = { workspace = true }
+
+# ============
+# Package data
+# ============
+[tool.setuptools.package-data]
+"authmint" = ["py.typed"]
+
+# ============
+# Project URLs
+# ============
+[project.urls]
+Homepage = "https://github.com/shaileshpandit141/authmint"
+Documentation = "https://shaileshpandit141.github.io/authmint"
+Source = "https://github.com/shaileshpandit141/authmint"
+Issues = "https://github.com/shaileshpandit141/authmint/issues"
+License = "https://github.com/shaileshpandit141/authmint/blob/main/LICENSE"
+
+# ===================
+# Tool Configurations
+# ===================
+
+# Disable ruff S101 rule for test casecases
+# -----------------------------------------
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101"]
+
+# ====================
+# Pytest configuration
+# ====================
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-v"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
