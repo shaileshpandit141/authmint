@@ -52,7 +52,9 @@ keywords = [
     "auth",
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pyjwt>=2.10.1",
+]
 
 # CLI scripts entry point configuration
 # -------------------------------------
