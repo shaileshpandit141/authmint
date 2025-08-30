@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 import secrets
 from jwt import InvalidTokenError, get_unverified_header, decode
 import time
+from os import environ
 
 
 class TokenManager:
@@ -15,11 +16,29 @@ class TokenManager:
 
     def __init__(
         self,
-        key_store: KeyStore,
-        replay_cache: ReplayCache,
+        key_store: KeyStore | None = None,
+        replay_cache: ReplayCache | None = None,
     ) -> None:
-        self.key_store = key_store
-        self.replay_cache = replay_cache
+        self.key_store = key_store or self._get_token_prvate_keys()
+        self.replay_cache = replay_cache or ReplayCache(
+            redis_url="redis://localhost:6379/0",
+        )
+
+    @staticmethod
+    def _get_token_prvate_keys() -> KeyStore:
+        """
+        Example loader:
+        - TOKEN_ACTIVE_KEY_ID = "2025-08-rot-1"
+        - TOKEN_PRIVATE_KEY_2025-08-rot-1 = "PEM-encoded Ed25519 private key"
+        - TOKEN_PRIVATE_KEY_2025-05-rot-0 = "previous key"
+        """
+        prefix = "TOKEN_PRIVATE_KEY_"
+        token_private_keys: dict[str, str] = {}
+        for key, value in environ.items():
+            if key.startswith(prefix):
+                kid = key[len(prefix) :]
+                token_private_keys[kid] = value
+        return KeyStore(token_private_keys)
 
     @staticmethod
     def _current_time() -> datetime:
