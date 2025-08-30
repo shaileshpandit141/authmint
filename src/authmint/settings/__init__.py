@@ -1,3 +1,3 @@
-from ._token_settings import TokenSettings
+from ._settings import Settings
 
-__all__ = ["TokenSettings"]
+__all__ = ["Settings"]

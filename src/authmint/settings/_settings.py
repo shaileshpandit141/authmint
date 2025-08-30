@@ -5,7 +5,7 @@ from datetime import timedelta
 
 
 @dataclass(frozen=True)
-class TokenSettings:
+class Settings:
     """
     Settings for token generation and validation.
 
@@ -19,7 +19,7 @@ class TokenSettings:
 
     Example:
     ```
-        settings = TokenSettings(
+        settings = Settings(
             issuer="my-app",
             audience="my-service",
             purpose="access",

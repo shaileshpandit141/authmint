@@ -1,5 +1,5 @@
 from typing import Any
-from authmint.settings import TokenSettings
+from authmint.settings import Settings
 from authmint.stores import KeyStore
 from authmint.cache import ReplayCache
 from datetime import datetime, timedelta, timezone
@@ -16,7 +16,7 @@ class TokenManager:
 
     def __init__(
         self,
-        settings: TokenSettings,
+        settings: Settings,
         key_store: KeyStore | None = None,
         replay_cache: ReplayCache | None = None,
     ) -> None:
