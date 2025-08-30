@@ -1,99 +1,95 @@
 from typing import Any
-from authmint.configs import TokenConfig
-from authmint.managers import KeyManager
-from authmint.stores import JtiStore
+from authmint.settings import TokenSettings
+from authmint.stores import KeyStore
+from authmint.cache import ReplayCache
 from datetime import datetime, timedelta, timezone
 import secrets
-import jwt
-from jwt import InvalidTokenError
+from jwt import InvalidTokenError, get_unverified_header, decode
 import time
 
 
-class TokenService:
+class TokenManager:
     """
-    High-level API to issue and verify limited-time tokens with strict scoping.
+    High-level API to generate, validate, and revoke limited-time tokens with strict scoping.
     """
 
     def __init__(
         self,
-        key_manager: KeyManager,
-        jti_store: JtiStore | None = None,
+        key_store: KeyStore,
+        replay_cache: ReplayCache | None = None,
     ) -> None:
-        self.key_manager = key_manager
-        self.jti_store = jti_store or JtiStore()
+        self.key_store = key_store
+        self.replay_cache = replay_cache or ReplayCache()
 
     @staticmethod
-    def _now() -> datetime:
+    def _current_time() -> datetime:
         return datetime.now(timezone.utc)
 
-    def issue(
+    def generate_token(
         self,
-        sub: str,
-        config: TokenConfig,
+        subject_id: str,
+        settings: TokenSettings,
         extra_claims: dict[str, Any] | None = None,
         not_before: timedelta | None = None,
     ) -> str:
-        now = self._now()
-        exp = now + config.timeout
-        nbf = now + (not_before or timedelta(seconds=0))
-        jti = secrets.token_urlsafe(24)
+        now = self._current_time()
+        expires_at = now + settings.expiry_duration
+        not_before_time = now + (not_before or timedelta(seconds=0))
+        token_id = secrets.token_urlsafe(24)
 
         claims: dict[str, Any] = {
-            "iss": config.issuer,
-            "aud": config.audience,
-            "sub": sub,
+            "iss": settings.token_issuer,
+            "aud": settings.token_audience,
+            "sub": subject_id,
             "iat": int(now.timestamp()),
-            "nbf": int(nbf.timestamp()),
-            "exp": int(exp.timestamp()),
-            "jti": jti,
-            "purpose": config.purpose,
+            "nbf": int(not_before_time.timestamp()),
+            "exp": int(expires_at.timestamp()),
+            "jti": token_id,
+            "purpose": settings.token_purpose,
         }
 
         if extra_claims:
             # Avoid collisions with registered claims
-            restricted = {"iss", "aud", "sub", "iat", "nbf", "exp", "jti", "purpose"}
-            if restricted.intersection(extra_claims.keys()):
+            reserved = {"iss", "aud", "sub", "iat", "nbf", "exp", "jti", "purpose"}
+            if reserved.intersection(extra_claims.keys()):
                 raise ValueError("extra_claims collides with registered claims")
             claims.update(extra_claims)
 
-        token = self.key_manager.sign(
-            payload=claims,
-        )
-
+        token = self.key_store.sign_token(claims=claims)
         return token
 
-    def verify(
+    def validate_token(
         self,
         token: str,
-        expected: TokenConfig,
-        accept_reuse: bool = False,
+        expected: TokenSettings,
+        allow_reuse: bool = False,
     ) -> dict[str, Any]:
         """
-        Verify signature, lifetime, audience, issuer, purpose; enforce replay protection by default.
+        Validate signature, lifetime, audience, issuer, purpose; enforce replay protection by default.
         Returns decoded claims if valid; raises InvalidTokenError on failure.
         """
 
-        # Peek header for kid
+        # Peek header for key_id
         try:
-            unverified_header = jwt.get_unverified_header(token)
-            kid = unverified_header.get("kid")
-            if not kid:
+            unverified_header = get_unverified_header(token)
+            key_id = unverified_header.get("kid")
+            if not key_id:
                 raise InvalidTokenError("Missing 'kid'")
-        except jwt.InvalidTokenError as error:
+        except InvalidTokenError as error:
             raise InvalidTokenError(f"Invalid header: {error}") from error
 
         # Fetch public key
-        pub_pem = self.key_manager.get_public_key(kid=kid)
+        public_key_pem = self.key_store.get_public_key(key_id=key_id)
 
         # Decode & validate time-based claims + audience/issuer
         try:
-            claims: dict[str, Any] = jwt.decode(
+            claims: dict[str, Any] = decode(
                 token,
-                key=pub_pem,
+                key=public_key_pem,
                 algorithms=["EdDSA"],
-                audience=expected.audience,
-                issuer=expected.issuer,
-                leeway=expected.leeway_seconds,
+                audience=expected.token_audience,
+                issuer=expected.token_issuer,
+                leeway=expected.clock_skew_leeway,
                 options={
                     "require": [
                         "iss",
@@ -111,30 +107,30 @@ class TokenService:
             raise
 
         # Purpose scoping
-        if claims.get("purpose") != expected.purpose:
+        if claims.get("purpose") != expected.token_purpose:
             raise InvalidTokenError("Token purpose mismatch")
 
         # Replay prevention
-        jti = claims["jti"]
+        token_id = claims["jti"]
         ttl_seconds = max(1, int(claims["exp"] - time.time()))
-        if expected.replay_prevent:
-            if self.jti_store.exists(jti):
-                if not accept_reuse:
+        if expected.prevent_replay:
+            if self.replay_cache.is_used(token_id):
+                if not allow_reuse:
                     raise InvalidTokenError("Token has already been used/revoked")
             else:
-                # mark JTI as used for remaining TTL
-                self.jti_store.mark(jti, ttl_seconds)
+                # Mark token as used for remaining TTL
+                self.replay_cache.mark_as_used(token_id, ttl_seconds)
 
         return claims
 
-    def revoke(self, token: str) -> None:
+    def revoke_token(self, token: str) -> None:
         """Explicitly revoke a token (e.g., on user action)."""
         try:
-            unverified = jwt.decode(token, options={"verify_signature": False})
-            jti = unverified.get("jti")
-            exp = int(unverified.get("exp", 0))
+            unverified_claims = decode(token, options={"verify_signature": False})
+            token_id = unverified_claims.get("jti")
+            expires_at = int(unverified_claims.get("exp", 0))
         except Exception:
             # If we can't parse safely, do nothing (or log).
             return
-        ttl_seconds = max(1, exp - int(time.time()))
-        self.jti_store.revoke(jti, ttl_seconds)
+        ttl_seconds = max(1, expires_at - int(time.time()))
+        self.replay_cache.revoke_token(token_id, ttl_seconds)

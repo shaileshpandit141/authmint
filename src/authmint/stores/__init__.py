@@ -1,3 +1,3 @@
-from ._jti_store import JtiStore
+from ._key_store import KeyStore
 
-__all__ = ["JtiStore"]
+__all__ = ["KeyStore"]
