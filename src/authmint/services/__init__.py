@@ -1,3 +1,3 @@
-from ._token_service import TokenService
+from ._token_manager import TokenManager
 
-__all__ = ["TokenService"]
+__all__ = ["TokenManager"]
