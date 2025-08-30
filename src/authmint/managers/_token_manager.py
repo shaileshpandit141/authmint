@@ -16,10 +16,10 @@ class TokenManager:
     def __init__(
         self,
         key_store: KeyStore,
-        replay_cache: ReplayCache | None = None,
+        replay_cache: ReplayCache,
     ) -> None:
         self.key_store = key_store
-        self.replay_cache = replay_cache or ReplayCache()
+        self.replay_cache = replay_cache
 
     @staticmethod
     def _current_time() -> datetime:
@@ -38,14 +38,14 @@ class TokenManager:
         token_id = secrets.token_urlsafe(24)
 
         claims: dict[str, Any] = {
-            "iss": settings.token_issuer,
-            "aud": settings.token_audience,
+            "iss": settings.issuer,
+            "aud": settings.audience,
             "sub": subject_id,
             "iat": int(now.timestamp()),
             "nbf": int(not_before_time.timestamp()),
             "exp": int(expires_at.timestamp()),
             "jti": token_id,
-            "purpose": settings.token_purpose,
+            "purpose": settings.purpose,
         }
 
         if extra_claims:
@@ -87,8 +87,8 @@ class TokenManager:
                 token,
                 key=public_key_pem,
                 algorithms=["EdDSA"],
-                audience=expected.token_audience,
-                issuer=expected.token_issuer,
+                audience=expected.audience,
+                issuer=expected.issuer,
                 leeway=expected.clock_skew_leeway,
                 options={
                     "require": [
@@ -107,7 +107,7 @@ class TokenManager:
             raise
 
         # Purpose scoping
-        if claims.get("purpose") != expected.token_purpose:
+        if claims.get("purpose") != expected.purpose:
             raise InvalidTokenError("Token purpose mismatch")
 
         # Replay prevention
