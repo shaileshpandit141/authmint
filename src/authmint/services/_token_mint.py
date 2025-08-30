@@ -9,7 +9,7 @@ import time
 from os import environ
 
 
-class TokenManager:
+class TokenMint:
     """
     High-level API to generate, validate, and revoke limited-time tokens with strict scoping.
     """
