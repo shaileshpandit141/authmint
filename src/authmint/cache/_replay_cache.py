@@ -1,6 +1,5 @@
 from __future__ import annotations
 import redis
-from os import environ
 
 
 class ReplayCache:
@@ -11,12 +10,10 @@ class ReplayCache:
 
     def __init__(
         self,
-        redis_url: str | None = None,
+        redis_url: str,
         key_prefix: str = "token:jti:",
     ) -> None:
-        self._redis_client = redis.from_url(  # type: ignore
-            redis_url or environ.get("REDIS_URL", "redis://localhost:6379/0")
-        )
+        self._redis_client = redis.from_url(redis_url)  # type: ignore
         self._key_prefix = key_prefix
 
     def _build_key(self, token_id: str) -> str:
