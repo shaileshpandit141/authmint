@@ -16,9 +16,11 @@ class TokenManager:
 
     def __init__(
         self,
+        settings: TokenSettings,
         key_store: KeyStore | None = None,
         replay_cache: ReplayCache | None = None,
     ) -> None:
+        self.settings = settings
         self.key_store = key_store or self._get_token_prvate_keys()
         self.replay_cache = replay_cache or ReplayCache(
             redis_url="redis://localhost:6379/0",
@@ -47,24 +49,23 @@ class TokenManager:
     def generate_token(
         self,
         subject_id: str,
-        settings: TokenSettings,
         extra_claims: dict[str, Any] | None = None,
         not_before: timedelta | None = None,
     ) -> str:
         now = self._current_time()
-        expires_at = now + settings.expiry_duration
+        expires_at = now + self.settings.expiry_duration
         not_before_time = now + (not_before or timedelta(seconds=0))
         token_id = secrets.token_urlsafe(24)
 
         claims: dict[str, Any] = {
-            "iss": settings.issuer,
-            "aud": settings.audience,
+            "iss": self.settings.issuer,
+            "aud": self.settings.audience,
             "sub": subject_id,
             "iat": int(now.timestamp()),
             "nbf": int(not_before_time.timestamp()),
             "exp": int(expires_at.timestamp()),
             "jti": token_id,
-            "purpose": settings.purpose,
+            "purpose": self.settings.purpose,
         }
 
         if extra_claims:
@@ -80,7 +81,6 @@ class TokenManager:
     def validate_token(
         self,
         token: str,
-        expected: TokenSettings,
         allow_reuse: bool = False,
     ) -> dict[str, Any]:
         """
@@ -106,9 +106,9 @@ class TokenManager:
                 token,
                 key=public_key_pem,
                 algorithms=["EdDSA"],
-                audience=expected.audience,
-                issuer=expected.issuer,
-                leeway=expected.clock_skew_leeway,
+                audience=self.settings.audience,
+                issuer=self.settings.issuer,
+                leeway=self.settings.clock_skew_leeway,
                 options={
                     "require": [
                         "iss",
@@ -126,13 +126,13 @@ class TokenManager:
             raise
 
         # Purpose scoping
-        if claims.get("purpose") != expected.purpose:
+        if claims.get("purpose") != self.settings.purpose:
             raise InvalidTokenError("Token purpose mismatch")
 
         # Replay prevention
         token_id = claims["jti"]
         ttl_seconds = max(1, int(claims["exp"] - time.time()))
-        if expected.prevent_replay:
+        if self.settings.prevent_replay:
             if self.replay_cache.is_used(token_id):
                 if not allow_reuse:
                     raise InvalidTokenError("Token has already been used/revoked")
