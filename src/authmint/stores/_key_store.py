@@ -1,9 +1,11 @@
 from __future__ import annotations
-from typing import Any
-from cryptography.hazmat.primitives.asymmetric import ed25519
-from cryptography.hazmat.primitives import serialization
+
 from os import environ
-from jwt import encode, InvalidTokenError
+from typing import Any
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
+from jwt import InvalidTokenError, encode
 
 
 class KeyStore:
@@ -18,7 +20,7 @@ class KeyStore:
     def __init__(self, private_key_map: dict[str, str]) -> None:
         """
         private_key_map: { key_id: PEM-encoded Ed25519 private key (PKCS8) }
-        Environment must contain TOKEN_CURRENT_KID pointing to the active key.
+        Environment must contain TOKEN_ACTIVE_KEY_ID pointing to the active key.
         """
         self._private_keys: dict[str, ed25519.Ed25519PrivateKey] = {}
         self._public_keys_pem: dict[str, bytes] = {}
@@ -33,9 +35,9 @@ class KeyStore:
                 format=serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
-        active = environ.get("TOKEN_CURRENT_KID")
+        active = environ.get("TOKEN_ACTIVE_KEY_ID")
         if not active or active not in self._private_keys:
-            raise RuntimeError("TOKEN_CURRENT_KID must reference a key in private_key_map")
+            raise RuntimeError("TOKEN_ACTIVE_KEY_ID must reference a key in private_key_map")
         self._active_key_id = active
 
     @property
