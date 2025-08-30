@@ -1,12 +1,14 @@
+import secrets
+import time
+from datetime import datetime, timedelta, timezone
+from os import environ
 from typing import Any
+
+from jwt import InvalidTokenError, decode, get_unverified_header
+
+from authmint.cache import ReplayCache
 from authmint.settings import Settings
 from authmint.stores import KeyStore
-from authmint.cache import ReplayCache
-from datetime import datetime, timedelta, timezone
-import secrets
-from jwt import InvalidTokenError, get_unverified_header, decode
-import time
-from os import environ
 
 
 class TokenMint:
@@ -21,13 +23,13 @@ class TokenMint:
         replay_cache: ReplayCache | None = None,
     ) -> None:
         self.settings = settings
-        self.key_store = key_store or self._get_token_prvate_keys()
+        self.key_store = key_store or self._load_environ_tokens()
         self.replay_cache = replay_cache or ReplayCache(
             redis_url="redis://localhost:6379/0",
         )
 
     @staticmethod
-    def _get_token_prvate_keys() -> KeyStore:
+    def _load_environ_tokens() -> KeyStore:
         """
         Example loader:
         - TOKEN_ACTIVE_KEY_ID = "2025-08-rot-1"
