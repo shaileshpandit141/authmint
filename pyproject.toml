@@ -74,7 +74,9 @@ build-backend = "hatchling.build"
 # Dependency groups
 # =================
 [dependency-groups]
-dev = []
+dev = [
+    "pytest>=8.4.1",
+]
 
 # =====================
 # Optional dependencies
