@@ -19,11 +19,10 @@ class TokenMint:
     def __init__(
         self,
         settings: Settings,
-        key_store: KeyStore | None = None,
         replay_cache: ReplayCache | None = None,
     ) -> None:
         self.settings = settings
-        self.key_store = key_store or self._load_environ_tokens()
+        self.key_store = self._load_environ_tokens()
         self.replay_cache = replay_cache or ReplayCache(
             redis_url="redis://localhost:6379/0",
         )
