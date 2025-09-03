@@ -4,7 +4,7 @@
 
 [project]
 name = "authmint"
-version = "0.1.3"
+version = "0.1.4"
 description = "A modern Python library for issuing and verifying limited-time, scoped, and replay-protected tokens."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
@@ -52,11 +52,7 @@ keywords = [
     "auth",
 ]
 requires-python = ">=3.13"
-dependencies = [
-    "cryptography>=45.0.6",
-    "pyjwt>=2.10.1",
-    "redis>=5.2.1",
-]
+dependencies = ["cryptography>=45.0.6", "pyjwt>=2.10.1", "redis>=6.4.0"]
 
 # CLI scripts entry point configuration
 # -------------------------------------
@@ -74,10 +70,7 @@ build-backend = "hatchling.build"
 # Dependency groups
 # =================
 [dependency-groups]
-dev = [
-    "pytest>=8.4.1",
-    "python-dotenv>=1.1.1",
-]
+dev = ["pytest>=8.4.1", "python-dotenv>=1.1.1"]
 
 # =====================
 # Optional dependencies
