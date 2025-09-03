@@ -4,7 +4,7 @@ requires-python = ">=3.13"
 
 [[package]]
 name = "authmint"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
@@ -29,7 +29,7 @@ requires-dist = [
     { name = "cryptography", specifier = ">=45.0.6" },
     { name = "mypy", marker = "extra == 'dev'" },
     { name = "pyjwt", specifier = ">=2.10.1" },
-    { name = "redis", specifier = ">=6.4.0" },
+    { name = "redis", specifier = ">=5.2.1" },
     { name = "ruff", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]
