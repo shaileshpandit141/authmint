@@ -9,6 +9,7 @@ from jwt import InvalidTokenError, decode, get_unverified_header
 from authmint.cache import ReplayCache
 from authmint.settings import Settings
 from authmint.stores import KeyStore
+from authmint.schema import ClaimDict
 
 
 class TokenMint:
@@ -31,9 +32,9 @@ class TokenMint:
     def _load_environ_tokens() -> KeyStore:
         """
         Example loader:
-        - TOKEN_ACTIVE_KEY_ID = "2025-08-rot-1"
-        - TOKEN_PRIVATE_KEY_2025-08-rot-1 = "PEM-encoded Ed25519 private key"
-        - TOKEN_PRIVATE_KEY_2025-05-rot-0 = "previous key"
+        - TOKEN_ACTIVE_KEY_ID = "v1"
+        - TOKEN_PRIVATE_KEY_v1 = "PEM-encoded Ed25519 private key"
+        - TOKEN_PRIVATE_KEY_v0 = "previous key"
         """
         prefix = "TOKEN_PRIVATE_KEY_"
         token_private_keys: dict[str, str] = {}
@@ -49,7 +50,7 @@ class TokenMint:
 
     def generate_token(
         self,
-        subject_id: str,
+        subject: str,
         extra_claims: dict[str, Any] | None = None,
         not_before: timedelta | None = None,
     ) -> str:
@@ -61,20 +62,21 @@ class TokenMint:
         claims: dict[str, Any] = {
             "iss": self.settings.issuer,
             "aud": self.settings.audience,
-            "sub": subject_id,
+            "pur": self.settings.purpose,
+            "sub": subject,
+            "jti": token_id,
             "iat": int(now.timestamp()),
             "nbf": int(not_before_time.timestamp()),
             "exp": int(expires_at.timestamp()),
-            "jti": token_id,
-            "purpose": self.settings.purpose,
+            "ext": {},
         }
 
         if extra_claims:
             # Avoid collisions with registered claims
-            reserved = {"iss", "aud", "sub", "iat", "nbf", "exp", "jti", "purpose"}
+            reserved = {"iss", "aud", "sub", "iat", "nbf", "exp", "jti", "pur"}
             if reserved.intersection(extra_claims.keys()):
                 raise ValueError("extra_claims collides with registered claims")
-            claims.update(extra_claims)
+            claims["ext"] = extra_claims
 
         token = self.key_store.sign_token(claims=claims)
         return token
@@ -83,7 +85,7 @@ class TokenMint:
         self,
         token: str,
         allow_reuse: bool = False,
-    ) -> dict[str, Any]:
+    ) -> ClaimDict:
         """
         Validate signature, lifetime, audience, issuer, purpose; enforce replay protection by default.
         Returns decoded claims if valid; raises InvalidTokenError on failure.
@@ -103,7 +105,7 @@ class TokenMint:
 
         # Decode & validate time-based claims + audience/issuer
         try:
-            claims: dict[str, Any] = decode(
+            claims: ClaimDict = decode(
                 token,
                 key=public_key_pem,
                 algorithms=["EdDSA"],
@@ -114,12 +116,12 @@ class TokenMint:
                     "require": [
                         "iss",
                         "aud",
+                        "pur",
                         "sub",
+                        "jti",
                         "iat",
                         "nbf",
                         "exp",
-                        "jti",
-                        "purpose",
                     ],
                 },
             )
@@ -127,7 +129,7 @@ class TokenMint:
             raise
 
         # Purpose scoping
-        if claims.get("purpose") != self.settings.purpose:
+        if claims.get("pur") != self.settings.purpose:
             raise InvalidTokenError("Token purpose mismatch")
 
         # Replay prevention
