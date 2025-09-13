@@ -4,7 +4,7 @@
 
 [project]
 name = "tokenmint"
-version = "0.1.0"
+version = "0.1.1"
 description = "A modern Python library for issuing and verifying limited-time, scoped, and replay-protected tokens."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
