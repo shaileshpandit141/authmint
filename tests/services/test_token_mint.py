@@ -1,6 +1,6 @@
-from authmint.services import TokenMint
+from tokenmint.services import TokenMint
 from pytest import raises
-from authmint.exceptions import InvalidTokenError
+from tokenmint.exceptions import InvalidTokenError
 
 
 def test_token_mint_instance(email_verification_mint: TokenMint) -> None:

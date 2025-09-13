@@ -3,8 +3,8 @@
 # ==========================
 
 [project]
-name = "authmint"
-version = "1.0.0"
+name = "tokenmint"
+version = "0.1.0"
 description = "A modern Python library for issuing and verifying limited-time, scoped, and replay-protected tokens."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
@@ -22,8 +22,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Security",
-    "Topic :: Security :: Cryptography",
-    "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Security :: Cryptography",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -57,7 +55,7 @@ dependencies = ["cryptography>=45.0.6", "pyjwt>=2.10.1", "redis>=6.4.0"]
 # CLI scripts entry point configuration
 # -------------------------------------
 [project.scripts]
-authmint = "authmint:entry_point"
+tokenmint = "tokenmint:entry_point"
 
 # ==========================
 # Build system configuration
@@ -82,23 +80,23 @@ dev = ["mypy", "ruff"]
 # UV tool sources
 # ===============
 [tool.uv.sources]
-authmint = { workspace = true }
+tokenmint = { workspace = true }
 
 # ============
 # Package data
 # ============
 [tool.setuptools.package-data]
-"authmint" = ["py.typed"]
+"tokenmint" = ["py.typed"]
 
 # ============
 # Project URLs
 # ============
 [project.urls]
-Homepage = "https://github.com/shaileshpandit141/authmint"
-Documentation = "https://shaileshpandit141.github.io/authmint"
-Source = "https://github.com/shaileshpandit141/authmint"
-Issues = "https://github.com/shaileshpandit141/authmint/issues"
-License = "https://github.com/shaileshpandit141/authmint/blob/main/LICENSE"
+Homepage = "https://github.com/shaileshpandit141/tokenmint"
+Documentation = "https://shaileshpandit141.github.io/tokenmint"
+Source = "https://github.com/shaileshpandit141/tokenmint"
+Issues = "https://github.com/shaileshpandit141/tokenmint/issues"
+License = "https://github.com/shaileshpandit141/tokenmint/blob/main/LICENSE"
 
 # ===================
 # Tool Configurations

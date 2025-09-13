@@ -1,6 +1,6 @@
 from datetime import timedelta
-from authmint.services import TokenMint
-from authmint.settings import Settings
+from tokenmint.services import TokenMint
+from tokenmint.settings import Settings
 from pytest import fixture
 from dotenv import load_dotenv
 

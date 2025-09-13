@@ -6,10 +6,10 @@ from typing import Any
 
 from jwt import InvalidTokenError, decode, get_unverified_header
 
-from authmint.cache import ReplayCache
-from authmint.settings import Settings
-from authmint.stores import KeyStore
-from authmint.schema import ClaimDict
+from tokenmint.cache import ReplayCache
+from tokenmint.settings import Settings
+from tokenmint.stores import KeyStore
+from tokenmint.schema import ClaimDict
 
 
 class TokenMint:

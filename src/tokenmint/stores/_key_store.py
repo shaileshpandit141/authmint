@@ -6,7 +6,7 @@ from typing import Any
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from jwt import InvalidTokenError, encode
-from authmint.exceptions import TokenConfigurationError
+from tokenmint.exceptions import TokenConfigurationError
 
 
 class KeyStore:

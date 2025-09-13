@@ -1,10 +1,10 @@
-# 🪙 Authmint
+# 🪙 Tokenmint
 
-[![PyPI version](https://img.shields.io/pypi/v/authmint.svg)](https://pypi.org/project/authmint/)
-[![Python versions](https://img.shields.io/pypi/pyversions/authmint.svg)](https://pypi.org/project/authmint/)
-[![License](https://img.shields.io/pypi/l/authmint.svg)](https://github.com/shaileshpandit141/authmint/blob/main/LICENSE)
+[![PyPI version](https://img.shields.io/pypi/v/tokenmint.svg)](https://pypi.org/project/tokenmint/)
+[![Python versions](https://img.shields.io/pypi/pyversions/tokenmint.svg)](https://pypi.org/project/tokenmint/)
+[![License](https://img.shields.io/pypi/l/tokenmint.svg)](https://github.com/shaileshpandit141/tokenmint/blob/main/LICENSE)
 
-**Authmint** is a modern Python library for issuing and verifying **limited-time, scoped, and replay-protected tokens**.
+**Tokenmint** is a modern Python library for issuing and verifying **limited-time, scoped, and replay-protected tokens**.
 Built for 2025 and beyond, it provides a **production-grade token system** with features like **key rotation, purpose scoping, Redis-backed replay prevention, and secure Ed25519 signatures**.
 
 ## ✨ Features
@@ -19,26 +19,26 @@ Built for 2025 and beyond, it provides a **production-grade token system** with 
 
 ## 📦 Installation
 
-You can install **Authmint** via **pip** or **uv**:
+You can install **Tokenmint** via **pip** or **uv**:
 
 * **Using uv**
 
 ```bash
-uv add authmint
+uv add tokenmint
 ```
 
 * **Using pip**
 
 ```bash
-pip install authmint
+pip install tokenmint
 ```
 
 ## 🚀 Quick Start
 
 ```python
 from datetime import timedelta
-from authmint.settings import Settings
-from authmint.services import TokenMint
+from tokenmint.settings import Settings
+from tokenmint.services import TokenMint
 
 # Define token settings
 settings = Settings(
@@ -66,7 +66,7 @@ print("Decoded claims:", claims)
 
 ## 🔐 Key Management
 
-Authmint uses **Ed25519 key pairs** with support for **key rotation**.
+tokenmint uses **Ed25519 key pairs** with support for **key rotation**.
 Keys are loaded from environment variables:
 
 ```bash
@@ -80,7 +80,7 @@ export TOKEN_PRIVATE_KEY_2025-08-rot-1="$(cat ed25519-private.pem)"
 
 ## 📖 Detailed Use Cases
 
-Authmint is designed to fit common security-sensitive flows. Below are example implementations.
+tokenmint is designed to fit common security-sensitive flows. Below are example implementations.
 
 ### 1. 🔑 **Email Verification**
 
@@ -88,8 +88,8 @@ Send a time-limited verification link when a user signs up:
 
 ```python
 from datetime import timedelta
-from authmint.settings import Settings
-from authmint.services import TokenMint
+from tokenmint.settings import Settings
+from tokenmint.services import TokenMint
 
 settings = Settings(
     issuer="myapp.io",
@@ -243,7 +243,7 @@ export REDIS_URL="redis://prod-redis-server:6379/3"
 
 ```python
 from datetime import timedelta
-from authmint.settings import Settings
+from tokenmint.settings import Settings
 
 settings = Settings(
     issuer="payments.myapp.io",
@@ -258,7 +258,7 @@ settings = Settings(
 #### Configure Redis Replay Cache
 
 ```python
-from authmint.cache import ReplayCache
+from tokenmint.cache import ReplayCache
 import os
 
 redis_url = os.getenv("REDIS_URL")
@@ -270,7 +270,7 @@ replay_cache = ReplayCache(redis_url=redis_url, key_prefix="prod:payment:jti:")
 #### Initialize TokenMint
 
 ```python
-from authmint.services import TokenMint
+from tokenmint.services import TokenMint
 
 mint = TokenMint(
     settings=settings,
@@ -294,7 +294,7 @@ print("Send this token to the frontend for approval:", payment_token)
 #### Validate Token During Approval
 
 ```python
-from authmint.exceptions import InvalidTokenError
+from tokenmint.exceptions import InvalidTokenError
 
 try:
     claims = mint.validate_token(payment_token)
@@ -323,7 +323,7 @@ mint.revoke_token(payment_token)
 
 ## 🔑 Build Any Tokenized Flow with Replay Protection
 
-Authmint enforces **true single-use tokens** with Redis-backed replay prevention.  
+tokenmint enforces **true single-use tokens** with Redis-backed replay prevention.  
 With these building blocks, you can implement **any tokenized flow** - from user onboarding to secure inter-service communication.
 
 ## 🤝 Contributing
