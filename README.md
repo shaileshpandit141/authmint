@@ -53,7 +53,7 @@ mint = TokenMint(settings)
 
 # Generate a token
 token = mint.generate_token(
-    subject_id="user:42",
+    subject="20",
     extra_claims={"email": "alice@example.com"},
 )
 
@@ -102,7 +102,7 @@ mint = TokenMint(settings)
 
 # Issue a token for user
 token = mint.generate_token(
-    subject_id="user:42",
+    subject="20",
     extra_claims={"email": "alice@example.com"},
 )
 
@@ -132,7 +132,7 @@ settings = Settings(
 mint = TokenMint(settings)
 
 # Issue reset token
-reset_token = mint.generate_token(subject_id="user:42")
+reset_token = mint.generate_token(subject="20")
 
 # User submits new password with token
 claims = mint.validate_token(reset_token)
@@ -158,7 +158,7 @@ settings = Settings(
 
 mint = TokenMint(settings)
 
-login_token = mint.generate_token(subject_id="user:42")
+login_token = mint.generate_token(subject="20")
 
 # When clicked
 claims = mint.validate_token(login_token)
@@ -182,7 +182,7 @@ settings = Settings(
 
 mint = TokenMint(settings)
 
-api_token = mint.generate_token(subject_id="service:frontend")
+api_token = mint.generate_token(subject="user@gmail.com")
 
 # Receiving service validates
 claims = mint.validate_token(api_token)
@@ -208,7 +208,7 @@ settings = Settings(
 mint = TokenMint(settings)
 
 txn_token = mint.generate_token(
-    subject_id="user:42",
+    subject="20",
     extra_claims={"amount": "100.00", "currency": "USD"},
 )
 
@@ -282,7 +282,7 @@ mint = TokenMint(
 
 ```python
 payment_token = mint.generate_token(
-    subject_id="user:42",
+    subject="20",
     extra_claims={"amount": "250.00", "currency": "USD", "payment_id": "txn_1001"}
 )
 
